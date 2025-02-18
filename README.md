@@ -11,4 +11,4 @@ Clean Architecture + MVVM 구조를 공부하기 위해 날씨 API를 연동한 
 - iOS 16.5 이상
 
 ### 사용 API
-1) Weather API
+- Weather API
