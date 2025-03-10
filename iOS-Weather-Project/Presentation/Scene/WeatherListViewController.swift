@@ -37,7 +37,9 @@ class WeatherListViewController: UIViewController {
         
         self.viewEventLogic.do {
             $0.refreshButtonDidTap.sink {
-                self.viewModel.didSearch(locations: self.defaultLocations)
+                Task {
+                    try await self.viewModel.didSearch(locations: self.defaultLocations)
+                }
             }.store(in: &cancellables)
         }
         
@@ -46,7 +48,9 @@ class WeatherListViewController: UIViewController {
     }
     
     private func requestPageInfo() {
-        self.viewModel.didSearch(locations: self.defaultLocations)
+        Task {
+            try await self.viewModel.didSearch(locations: self.defaultLocations)
+        }
     }
     
     private func setEventBindings() {

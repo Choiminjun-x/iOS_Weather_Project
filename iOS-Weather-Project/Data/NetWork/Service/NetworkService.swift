@@ -9,40 +9,32 @@ import Foundation
 import Combine
 
 protocol NetworkServiceProtocol {
-    func fetchLocationWeather(location: String, completion: @escaping (Result<WeatherResponseDTO, Error>) -> Void)
+    func fetchLocationWeather(location: String) async throws -> WeatherResponseDTO
 }
 
 class NetworkService: NetworkServiceProtocol {
     
     static let shared = NetworkService()
-    
-    func fetchLocationWeather(location: String, completion: @escaping (Result<WeatherResponseDTO, Error>) -> Void) {
+
+    func fetchLocationWeather(location: String) async throws -> WeatherResponseDTO {
         let urlString = "\(AppConfig.BASE_URL)?q=\(location)&appid=\(AppConfig.API_KEY)"
-        
-        guard let url = URL(string: urlString) else {
-            completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
-            return
-        }
-        
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(NSError(domain: "No data", code: -1, userInfo: nil)))
-                return
-            }
-            
-            do {
-                let decoder = JSONDecoder()
-                let weatherData = try decoder.decode(WeatherResponseDTO.self, from: data)
-                completion(.success(weatherData))
-            } catch {
-                completion(.failure(error))
-            }
-        }
-        task.resume()
+           
+           guard let url = URL(string: urlString) else {
+               throw NSError(domain: "Invalid URL", code: -1, userInfo: nil)
+           }
+           
+           let (data, response) = try await URLSession.shared.data(from: url)
+
+           guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+               throw NSError(domain: "Invalid response", code: -1, userInfo: nil)
+           }
+
+           do {
+               let decoder = JSONDecoder()
+               let weatherData = try decoder.decode(WeatherResponseDTO.self, from: data)
+               return weatherData
+           } catch {
+               throw error
+           }
     }
 }

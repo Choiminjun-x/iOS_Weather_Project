@@ -9,8 +9,7 @@ import Foundation
 
 // MARK: 원하는 지역의 날씨 정보를 얻는 것 UseCase
 protocol FetchWeatherUseCase {
-    func execute(location: String,
-                 completion: @escaping (Result<CityWeather, Error>) -> Void)
+    func execute(location: String) async throws -> CityWeather
 }
 
 final class DefaultFetchWeatherUseCase: FetchWeatherUseCase {
@@ -18,10 +17,11 @@ final class DefaultFetchWeatherUseCase: FetchWeatherUseCase {
     private let repository: WeatherRepository
     
     init(repository: WeatherRepository) {
-           self.repository = repository
-       }
+        self.repository = repository
+    }
     
-    func execute(location: String, completion: @escaping (Result<CityWeather, Error>) -> Void) {
-        repository.fetchLocationWeather(location: location, completion: completion)
+    func execute(location: String) async throws -> CityWeather {
+        let weather = try await self.repository.fetchLocationWeather(location: location)
+        return weather
     }
 }

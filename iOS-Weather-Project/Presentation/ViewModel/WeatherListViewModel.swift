@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 protocol WeatherListViewModelInput {
-    func didSearch(locations: [String])
+    func didSearch(locations: [String]) async throws
 }
 
 protocol WeatherListViewModelOutput {
@@ -35,22 +35,22 @@ class DefaultWeatherListViewModel: WeatherListViewModel {
         self.useCase = fetchWeatherUseCase
     }
     
-    private func load(locations: [String]) {
+    private func load(locations: [String]) async throws {
         let group = DispatchGroup()
         var weatherList = [CityWeather]()
         var errorList = [Error]()
         
         for location in locations {
             group.enter()
-            self.useCase.execute(location: location) { result in
-                switch result {
-                case .success(let model):
-                    weatherList.append(model)
-                case .failure(let error):
-                    errorList.append(error)
-                }
-                group.leave()
+            
+            do {
+                let cityWeather = try await self.useCase.execute(location: location)
+                weatherList.append(cityWeather)
+            } catch(let error) {
+                errorList.append(error)
             }
+            
+            group.leave()
         }
         
         group.notify(queue: .main) {
@@ -67,7 +67,8 @@ class DefaultWeatherListViewModel: WeatherListViewModel {
 extension DefaultWeatherListViewModel {
     
     // MARK: Input
-    func didSearch(locations: [String]) {
-        self.load(locations: locations)
+    
+    func didSearch(locations: [String]) async throws {
+        try await self.load(locations: locations)
     }
 }
