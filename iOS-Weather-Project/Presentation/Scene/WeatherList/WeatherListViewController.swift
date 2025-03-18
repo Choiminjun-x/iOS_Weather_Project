@@ -11,9 +11,9 @@ import Combine
 class WeatherListViewController: UIViewController {
     
     init(viewModel: WeatherListViewModel) {
-          self.viewModel = viewModel
-          super.init(nibName: nil, bundle: nil)
-      }
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
     
     required init?(coder aDecoder: NSCoder) {
         return nil
@@ -23,13 +23,20 @@ class WeatherListViewController: UIViewController {
     private var viewEventLogic: WeatherListViewEventLogic { self.view as! WeatherListViewEventLogic }
     
     private var viewModel: WeatherListViewModel
+    private var router: WeatherListRoutingLogic?
     
     private let defaultLocations = ["seoul", "busan", "daegu", "jeju"]
     
     private var cancellables = Set<AnyCancellable>()
     
+    private func setUp() {
+        self.router = WeatherListRouter()
+        self.router?.viewController = self
+    }
+    
     override func loadView() {
         self.view = WeatherListView.create()
+        self.setUp()
     }
     
     override func viewDidLoad() {
@@ -38,19 +45,33 @@ class WeatherListViewController: UIViewController {
         self.viewEventLogic.do {
             $0.refreshButtonDidTap.sink {
                 Task {
-                    try await self.viewModel.didSearch(locations: self.defaultLocations)
+                    do {
+                        try await self.viewModel.didSearch(locations: self.defaultLocations)
+                    } catch {
+                        print("requestPageInfo() 호출 중 에러 발생")
+                    }
                 }
+            }.store(in: &cancellables)
+            
+            $0.cellDidTap.sink { weather in
+                
             }.store(in: &cancellables)
         }
         
         self.setEventBindings()
-        self.requestPageInfo()
+        
+        // 호출 순서를 보장할 수 있음
+        Task {
+            do {
+                try await self.requestPageInfo()
+            } catch {
+                print("requestPageInfo() 호출 중 에러 발생")
+            }
+        }
     }
     
-    private func requestPageInfo() {
-        Task {
-            try await self.viewModel.didSearch(locations: self.defaultLocations)
-        }
+    private func requestPageInfo() async throws {
+        try await self.viewModel.didSearch(locations: self.defaultLocations)
     }
     
     private func setEventBindings() {

@@ -30,21 +30,21 @@ struct Coord: Codable {
 }
 
 struct Weather: Codable {
-    let id: Int
-    let main: String
-    let description: String
-    let icon: String
+    let id: Int // 날씨 ID (예: 800 = 맑음)
+    let main: String // 날씨 상태 (예: "Clear")
+    let description: String // 상세 날씨 설명 (예: "clear sky")
+    let icon: String // 날씨 아이콘 코드
 }
 
 struct Main: Codable {
-    let temp: Double
-    let feelsLike: Double
-    let tempMin: Double
-    let tempMax: Double
+    let temp: Double // 현재 온도
+    let feelsLike: Double // 체감온도
+    let tempMin: Double // 최저 기온
+    let tempMax: Double // 최고 기온
     let pressure: Int
-    let humidity: Int
-    let seaLevel: Int?
-    let grndLevel: Int?
+    let humidity: Int // 습도
+    let seaLevel: Int? // 해수면 기압
+    let grndLevel: Int? // 지면 기압
     
     enum CodingKeys: String, CodingKey {
         case temp
@@ -59,9 +59,9 @@ struct Main: Codable {
 }
 
 struct Wind: Codable {
-    let speed: Double
-    let deg: Int
-    let gust: Double?
+    let speed: Double // 풍속 (m/s)
+    let deg: Int // 풍향 (도)
+    let gust: Double? // 돌풍 속도 (옵션)
 }
 
 struct Rain: Codable {
@@ -73,7 +73,7 @@ struct Rain: Codable {
 }
 
 struct Clouds: Codable {
-    let all: Int
+    let all: Int // 구름량 (%)
 }
 
 struct Sys: Codable {

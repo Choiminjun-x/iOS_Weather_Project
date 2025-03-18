@@ -7,7 +7,7 @@
 		<key>API_KEY</key>
 		<string>64f4806d571f09331d33c87d847455c3</string>
 		<key>BASE_URL</key>
-		<string>https://api.openweathermap.org/data/2.5/weather</string>
+		<string>https://api.openweathermap.org/data/2.5</string>
 	</dict>
 </dict>
 </plist>

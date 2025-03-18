@@ -14,6 +14,7 @@ protocol WeatherListViewDisplayLogic where Self: NSObject {
 
 protocol WeatherListViewEventLogic where Self: NSObject {
     var refreshButtonDidTap: PassthroughSubject<Void, Never> { get }
+    var cellDidTap: PassthroughSubject<CityWeather?, Never> { get }
 }
 
 class WeatherListView: UIView, WeatherListViewDisplayLogic, WeatherListViewEventLogic {
@@ -25,11 +26,11 @@ class WeatherListView: UIView, WeatherListViewDisplayLogic, WeatherListViewEvent
     
     private var cancellables = Set<AnyCancellable>()
     
-    
     // MARK: Event Logic
     
     var refreshButtonDidTap: PassthroughSubject<Void, Never> = .init()
-        
+    var cellDidTap: PassthroughSubject<CityWeather?, Never> = .init()
+    
     static func create() -> WeatherListView {
         let bundle = Bundle(for: WeatherListView.self)
         let nib = bundle.loadNibNamed("WeatherListView", owner: nil)
@@ -47,6 +48,22 @@ class WeatherListView: UIView, WeatherListViewDisplayLogic, WeatherListViewEvent
             $0.delegate = self
             $0.dataSource = self
             $0.register(UINib(nibName: "WeatherListTableViewCell", bundle: nil), forCellReuseIdentifier: "WeatherListTableViewCell")
+            
+            $0.contentInset = .zero
+            $0.scrollIndicatorInsets = .zero
+            $0.contentInsetAdjustmentBehavior = .never
+            $0.tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 1, height: 1))
+            $0.tableFooterView = UIView(frame: CGRect(x: 0, y: 0, width: 1, height: 0.1))
+            $0.sectionHeaderHeight = 0
+            $0.estimatedSectionHeaderHeight = 0
+            $0.sectionFooterHeight = 0
+            $0.estimatedSectionFooterHeight = 0
+            $0.backgroundView = UIView()
+            
+            // ✅ iOS 15 이상에서 추가 여백 제거
+            if #available(iOS 15, *) {
+                $0.sectionHeaderTopPadding = 0
+            }
         }
         
         self.refreshButton.do {
@@ -77,5 +94,9 @@ extension WeatherListView: UITableViewDelegate, UITableViewDataSource {
         cell.displayCell(weather: self.weathers?[indexPath.row])
         
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        self.cellDidTap.send(self.weathers?[indexPath.row])
     }
 }

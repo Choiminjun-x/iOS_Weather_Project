@@ -19,10 +19,7 @@ protocol WeatherListViewModelOutput {
 
 protocol WeatherListViewModel: WeatherListViewModelInput, WeatherListViewModelOutput { }
 
-
 class DefaultWeatherListViewModel: WeatherListViewModel {
-    
-    // MARK: Dependency
     
     private let useCase: FetchWeatherUseCase
     
@@ -62,7 +59,6 @@ class DefaultWeatherListViewModel: WeatherListViewModel {
         }
     }
 }
-
 
 extension DefaultWeatherListViewModel {
     
